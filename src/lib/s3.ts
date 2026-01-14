@@ -46,7 +46,7 @@ export async function getCarouselImages(): Promise<CarouselImage[]> {
     const fileNames = imageFiles.map(file => file.Key!.split('/').pop() || "");
 
     // 2. Buscamos en la BD todos los usuarios cuyas imágenes estén en esa lista
-    let users: any[] = [];
+    let users: { image: string | null; name: string | null; career: string | null }[] = [];
     try {
         users = await prisma.user.findMany({
           where: {
@@ -90,8 +90,21 @@ export async function getCarouselImages(): Promise<CarouselImage[]> {
       })
     );
     
+    const ALLOWED_CAREERS = [
+      "INGENIERÍA DE SISTEMAS",
+      "Ingeniería de Sistemas",
+      "Ing.de Inteligencia Artificial",
+      "Ingeniería de Ciberseguridad",
+      "INGENIERÍA ESTADÍSTICA",
+      "Ingeniería Estadística",
+      "INGENIERÍA DE CIBERSEGURIDAD",
+      "INGENIERÍA DE INTELIGENCIA ARTIFICIAL"
+    ];
+
     // Filtro estricto solicitado: Solo devolver imágenes que tienen coincidencia en la base de datos
-    return imagesWithMetadata.filter(img => img.studentName !== "");
+    return imagesWithMetadata.filter(img => 
+      img.studentName !== "" && ALLOWED_CAREERS.includes(img.studentCareer || "")
+    );
 
   } catch (error) {
     console.error("Error fetching images from S3:", error);
